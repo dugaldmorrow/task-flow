@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f4f5f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    header svg { color: #0052cc; }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #172b4d;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #6b778c;
+      margin-left: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 24px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .add-task {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .add-task input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid #dfe1e6;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      color: #172b4d;
+      transition: border-color 0.2s;
+    }
+
+    .add-task input:focus {
+      outline: none;
+      border-color: #0052cc;
+    }
+
+    .add-task button {
+      padding: 10px 20px;
+      background: #0052cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-task button:hover { background: #0065ff; }
+
+    .stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #f4f5f7;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #172b4d;
+    }
+
+    .stat-value.completed-count { color: #00875a; }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #6b778c;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .task-list { list-style: none; }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f4f5f7;
+      transition: opacity 0.2s;
+    }
+
+    .task-item:last-child { border-bottom: none; }
+
+    .task-item.done { opacity: 0.5; }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: #6b778c;
+    }
+
+    .task-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #dfe1e6;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      background: white;
+    }
+
+    .task-checkbox.checked {
+      background: #00875a;
+      border-color: #00875a;
+    }
+
+    .task-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 0.95rem;
+      color: #172b4d;
+    }
+
+    .task-delete {
+      background: none;
+      border: none;
+      color: #dfe1e6;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .task-delete:hover { color: #de350b; }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 0;
+      color: #6b778c;
+      font-size: 0.95rem;
+    }
+
+    .empty-state span { display: block; font-size: 2rem; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="9 11 12 14 22 4"></polyline>
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+    </svg>
+    <h1>TaskFlow</h1>
+    <span class="subtitle">Stay on top of things</span>
+  </header>
+
+  <div class="card">
+    <div class="add-task">
+      <input type="text" id="task-input" placeholder="Add a new task…" />
+      <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-value" id="total-count">0</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value completed-count" id="completed-count">0</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="remaining-count">0</span>
+        <span class="stat-label">Remaining</span>
+      </div>
+    </div>
+
+    <ul class="task-list" id="task-list"></ul>
+    <div class="empty-state" id="empty-state">
+      <span>📋</span>
+      No tasks yet — add one above!
+    </div>
+  </div>
+
+  <script>
+    let tasks = [];
+
+    function addTask() {
+      const input = document.getElementById('task-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.push({ id: Date.now(), text, done: false });
+      input.value = '';
+      render();
+    }
+
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) task.done = !task.done;
+      updateStats();
+      render();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('task-list');
+      const empty = document.getElementById('empty-state');
+
+      if (tasks.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        updateStats();
+        return;
+      }
+
+      empty.style.display = 'none';
+      list.innerHTML = tasks.map(task => `
+        <li class="task-item ${task.done ? 'done' : ''}">
+          <div class="task-checkbox ${task.done ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+          <span class="task-text">${escapeHtml(task.text)}</span>
+          <button class="task-delete" onclick="deleteTask(${task.id})" title="Delete task">✕</button>
+        </li>
+      `).join('');
+    }
+
+    function updateStats() {
+      const total = tasks.length;
+      const completedElements = document.querySelectorAll('.task-checkbox.checked');
+      const completedCount = completedElements.length;
+      const remainingCount = total - completedCount;
+
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('completed-count').textContent = completedCount;
+      document.getElementById('remaining-count').textContent = remainingCount;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(text));
+      return div.innerHTML;
+    }
+
+    // Allow pressing Enter to add a task
+    document.getElementById('task-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') addTask();
+    });
+
+    // Initial render
+    render();
+  </script>
+
+</body>
+</html>
