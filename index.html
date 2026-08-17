@@ -243,7 +243,6 @@
     function toggleTask(id) {
       const task = tasks.find(t => t.id === id);
       if (task) task.done = !task.done;
-      updateStats();
       render();
     }
 
@@ -259,24 +258,23 @@
       if (tasks.length === 0) {
         list.innerHTML = '';
         empty.style.display = 'block';
-        updateStats();
-        return;
+      } else {
+        empty.style.display = 'none';
+        list.innerHTML = tasks.map(task => `
+          <li class="task-item ${task.done ? 'done' : ''}">
+            <div class="task-checkbox ${task.done ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+            <span class="task-text">${escapeHtml(task.text)}</span>
+            <button class="task-delete" onclick="deleteTask(${task.id})" title="Delete task">✕</button>
+          </li>
+        `).join('');
       }
 
-      empty.style.display = 'none';
-      list.innerHTML = tasks.map(task => `
-        <li class="task-item ${task.done ? 'done' : ''}">
-          <div class="task-checkbox ${task.done ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
-          <span class="task-text">${escapeHtml(task.text)}</span>
-          <button class="task-delete" onclick="deleteTask(${task.id})" title="Delete task">✕</button>
-        </li>
-      `).join('');
+      updateStats();
     }
 
     function updateStats() {
       const total = tasks.length;
-      const completedElements = document.querySelectorAll('.task-checkbox.checked');
-      const completedCount = completedElements.length;
+      const completedCount = tasks.filter(task => task.done).length;
       const remainingCount = total - completedCount;
 
       document.getElementById('total-count').textContent = total;
